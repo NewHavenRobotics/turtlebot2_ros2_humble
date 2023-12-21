@@ -5,7 +5,7 @@ ARG robot_workspace="/root/robot"
 
 
 FROM $from_image AS builder
-MAINTAINER proan@ingotrobotics.com
+
 
 RUN apt-get update && apt-get upgrade -y && apt-get install wget -y
 
@@ -81,6 +81,7 @@ RUN source /opt/ros/$ROS_DISTRO/setup.bash && cd $ROBOT_WORKSPACE && colcon buil
 
 #this allows a one liner docker run to also start the ros node
 COPY ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 

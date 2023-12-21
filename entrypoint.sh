@@ -2,6 +2,5 @@
 set -e
 
 # setup ros2 environment
-source "/opt/ros/$ROS_DISTRO/setup.bash" --
-source "/root/ros2_ws/install/local_setup.sh" --
+source "/root/robot/install/setup.sh" --
 exec "$@"

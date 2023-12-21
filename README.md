@@ -26,7 +26,7 @@ One liner to start docker container and ros node
 
 
 
---Original Readme with some modifications. See original repo to see fully original Readme--
+### *--Original Readme with some modifications. See original repo to see fully original Readme--*
 
 There have been previous efforts to support Turtlebot2 (based on Yujin's Kobuki mobile base), but none of them are docker-based nor supporting ROS2 humble. This repository is our attempt to address this. We followed and then edited the instructions for the release-1.0.x for the Kobuki <https://kobuki.readthedocs.io/en/release-1.0.x/software.html>, and we took inspiration from the ROS 2 Bouncy Turtlebot2 repo: <https://github.com/ros2/turtlebot2_demo/tree/master>.
 
