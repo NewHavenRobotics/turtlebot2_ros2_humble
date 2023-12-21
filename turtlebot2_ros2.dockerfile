@@ -1,9 +1,9 @@
 # Copyright 2023 Ingot Robotics
 
-ARG from_image=ros:iron
+ARG from_image=ros:humble
 ARG robot_workspace="/root/robot"
 
-#FROM osrf/ros:iron-desktop
+
 FROM $from_image AS builder
 MAINTAINER proan@ingotrobotics.com
 
@@ -26,7 +26,7 @@ RUN wget https://raw.githubusercontent.com/kobuki-base/kobuki_documentation/rele
     wget https://raw.githubusercontent.com/kobuki-base/kobuki_documentation/release/1.0.x/resources/kobuki_standalone.repos
 #   wget https://raw.githubusercontent.com/kobuki-base/kobuki_documentation/release/1.0.x/resources/venv.bash
 
-# Update kobuki_standalone.repos to build on iron
+# Update kobuki_standalone.repos to build on humble
 # comment out foxy ament tools
 RUN sed -i 's/ament_/#&/g' $KOBUKI_BUILD_SPACE/kobuki_standalone.repos
 # edit kobuki_standalone.repos to add line for kobuki_ros
@@ -64,16 +64,6 @@ COPY --from=builder $ROBOT_WORKSPACE/install/ install
 WORKDIR $ROBOT_WORKSPACE
 RUN apt-get update && apt-get upgrade -y && rosdep install --from-paths ./install/*/ -y --ignore-src
 
-# Install URG node
-RUN apt-get update && apt-get install ros-$ROS_DISTRO-urg-node -y
-
-# Patch urg_node_launch.py to point to the actual executable
-RUN sed -i "s/node_executable='urg_node'/executable='urg_node_driver'/g" /opt/ros/$ROS_DISTRO/share/urg_node/launch/urg_node_launch.py
-
-# Patch urg_node_serial.yaml (temporary fix, really should be changing the launch file)
-RUN sed -i 's/laser_frame_id: "laser"/laser_frame_id: "nav_laser"/g' /opt/ros/$ROS_DISTRO/share/urg_node/launch/urg_node_serial.yaml
-
-
 # Setup Turtlebot2 URDF
 COPY turtlebot2_description/ $ROBOT_WORKSPACE/src/turtlebot2_description
 COPY turtlebot2_bringup/ $ROBOT_WORKSPACE/src/turtlebot2_bringup
@@ -83,25 +73,28 @@ COPY turtlebot2_bringup/ $ROBOT_WORKSPACE/src/turtlebot2_bringup
 WORKDIR $ROBOT_WORKSPACE
 RUN apt-get update && rosdep install --from-paths ./src -y --ignore-src
 
-# Install Nav2 packages
-RUN apt-get update && apt-get install -y \
-    ros-$ROS_DISTRO-navigation2 \
-    ros-$ROS_DISTRO-nav2-bringup \
-    ros-$ROS_DISTRO-robot-localization \
-    ros-$ROS_DISTRO-slam-toolbox
 
 # Build turtlebot2_description and turtlebot2_bringup
 SHELL ["/bin/bash", "-c"]
 ARG parallel_jobs=8
 RUN source /opt/ros/$ROS_DISTRO/setup.bash && cd $ROBOT_WORKSPACE && colcon build --packages-select turtlebot2_description turtlebot2_bringup --parallel-workers $parallel_jobs --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
+#this allows a one liner docker run to also start the ros node
+COPY ./entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
 
 # Kobuki udev rules for host machine
 # `wget https://raw.githubusercontent.com/kobuki-base/kobuki_ftdi/devel/60-kobuki.rules`
 # and put that file in `/etc/udev/rules.d/`
 
-# Launch container with Hokuyo and Kobuki USB connections
-# `docker run -it --device=/dev/ttyUSB0 --device=/dev/kobuki --device=/dev/ttyACM0 <container name>`
+#Heres how to build it
+# 'docker build -t turtlebot2-ros-humble:humble -f turtlebot2_ros2.dockerfile --build-arg from_image=ros:humble --build-arg parallel_jobs=4 . ' <- dont forget the dot
+
+
+
+# Launch container Kobuki USB connections
+# `docker run -it -v /dev:/dev --device=/dev/kobuki <container name>`
 # If running rviz on a separate machine, adding `--network=host` is a
 # docker networking work-around to allow containers to communicate
 #
