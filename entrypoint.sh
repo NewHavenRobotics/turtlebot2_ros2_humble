@@ -2,5 +2,6 @@
 set -e
 
 # setup ros2 environment
-source "/root/robot/install/setup.sh" --
+source "/opt/ros/humble/setup.bash"
+source "/root/robot/install/setup.bash"
 exec "$@"
