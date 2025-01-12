@@ -21,7 +21,7 @@ Youll probably need to be in dialout group if you aren't already. This typically
 
 One liner to start docker container and ros node 
 
-    docker run -it --net=host --ipc=host --pid=host -v /dev:/dev --device=/dev/kobuki turtlebot2-ros-humble:humble ros2 launch kobuki_node kobuki_node-launch.py
+    docker run -it --rm --net=host --ipc=host --pid=host -v /dev:/dev --device=/dev/kobuki turtlebot2-ros-humble:humble ros2 launch kobuki_node kobuki_node-launch.py
 
 Theres some weirdness going on with memory sharing and networking. If you are able to see the topics from the node in `ros2 topic list`, but they are all empty, try removing `--net=host` from the one liner. 
 
